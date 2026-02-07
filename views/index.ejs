@@ -4,18 +4,22 @@ const otpModalBody = `
   <form method="post" action="/connect/otp/verify" class="row" data-loading="1" id="otpVerifyForm">
     <input type="hidden" name="otp" id="otpHidden" />
 
-    <div class="split" style="justify-content:space-between">
+    <div class="split" style="justify-content:space-between; align-items:flex-start">
       <div>
-        <div style="font-weight:950;font-size:13px">Masukkan OTP 6 digit</div>
-        <div class="muted" style="margin-top:2px">Auto-submit saat digit ke-6 terisi.</div>
+        <div style="font-weight:950;font-size:13.5px; display:flex; align-items:center; gap:8px">
+          <i class="ri-key-2-line"></i> Masukkan OTP (6 digit)
+        </div>
+        <div class="muted" style="margin-top:2px">
+          Auto-submit saat digit ke-6 terisi. Kamu bisa paste OTP sekaligus.
+        </div>
       </div>
-      <div class="otp-timer">
+      <div class="otp-timer" title="Waktu berlaku OTP">
         <i class="ri-timer-line"></i>
         <span id="otpCountdown">--:--</span>
       </div>
     </div>
 
-    <div class="otp-grid" id="otpGrid">
+    <div class="otp-grid" id="otpGrid" aria-label="OTP input">
       <input class="otp-box" inputmode="numeric" maxlength="1" autocomplete="one-time-code" />
       <input class="otp-box" inputmode="numeric" maxlength="1" />
       <input class="otp-box" inputmode="numeric" maxlength="1" />
@@ -34,6 +38,11 @@ const otpModalBody = `
         <i class="ri-delete-back-2-line"></i> Clear
       </button>
     </div>
+
+    <div class="muted" style="margin-top:8px">
+      <i class="ri-information-line"></i>
+      OTP token disimpan sementara di cookie <b>httpOnly</b> terenkripsi, tidak ditampilkan ke user.
+    </div>
   </form>
 `;
 %>
@@ -45,66 +54,148 @@ const otpModalBody = `
     otp_modal_body: otpModalBody,
     body: `
       <div class="grid">
+        <!-- LEFT: Connect -->
         <div class="card">
-          <div class="title"><i class="ri-link-m"></i> Connect Account</div>
+          <div class="title">
+            <i class="ri-link-m"></i> Connect Account
+          </div>
+
           <div class="muted">
             <b>Note:</b> ${note}<br/>
-            Mutasi tidak diambil otomatis. Semua aksi manual via tombol.
+            Tool ini hanya untuk demo real: <b>connect → get merchant → get mutasi</b> (manual). Tidak ada polling otomatis.
           </div>
 
           <div style="height:12px"></div>
 
-          <div class="tabs">
-            <button type="button" class="tab active" onclick="setTab('email')" data-tabbtn="email">
+          <!-- Mini highlights -->
+          <div class="card soft" style="padding:12px">
+            <div class="split" style="gap:10px">
+              <div style="flex:1; min-width:180px">
+                <div style="font-weight:950;font-size:13.5px;display:flex;align-items:center;gap:8px">
+                  <i class="ri-shield-check-line"></i> Private-by-default
+                </div>
+                <div class="muted" style="margin-top:2px">
+                  Credential tidak disimpan. Session cookie terenkripsi.
+                </div>
+              </div>
+              <div style="flex:1; min-width:180px">
+                <div style="font-weight:950;font-size:13.5px;display:flex;align-items:center;gap:8px">
+                  <i class="ri-cursor-line"></i> Manual actions
+                </div>
+                <div class="muted" style="margin-top:2px">
+                  Mutasi hanya diambil saat tombol ditekan.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="tabs" role="tablist" aria-label="Login method">
+            <button type="button" class="tab active" onclick="setTab('email')" data-tabbtn="email" role="tab">
               <i class="ri-mail-line"></i> Email
             </button>
-            <button type="button" class="tab" onclick="setTab('otp')" data-tabbtn="otp">
+            <button type="button" class="tab" onclick="setTab('otp')" data-tabbtn="otp" role="tab">
               <i class="ri-message-2-line"></i> OTP
             </button>
           </div>
 
           <div style="height:12px"></div>
 
+          <!-- EMAIL TAB -->
           <div data-tab="email">
-            <form method="post" action="/connect/email" class="row" data-loading="1">
-              <input class="inp" name="email" placeholder="Email" autocomplete="username" />
-              <input class="inp" type="password" name="password" placeholder="Password" autocomplete="current-password" />
-              <button class="btn primary" type="submit"><i class="ri-link"></i> Connect</button>
-              <div class="muted">Password hanya dipakai untuk login dan tidak disimpan.</div>
+            <form method="post" action="/connect/email" class="row" data-loading="1" autocomplete="on">
+              <div class="row" style="gap:8px">
+                <label class="muted" style="font-weight:900">Email</label>
+                <input class="inp" name="email" placeholder="contoh: email@domain.com" autocomplete="username" />
+              </div>
+
+              <div class="row" style="gap:8px">
+                <label class="muted" style="font-weight:900">Password</label>
+                <div style="position:relative">
+                  <input class="inp" id="pw" type="password" name="password" placeholder="••••••••" autocomplete="current-password" />
+                  <button type="button" class="btn secondary" id="pwToggle"
+                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%); height:36px; padding:0 10px; border-radius:12px">
+                    <i class="ri-eye-line"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="btn primary" type="submit">
+                  <i class="ri-plug-2-line"></i> Connect
+                </button>
+                <a class="btn secondary" href="/dashboard">
+                  <i class="ri-dashboard-line"></i> Dashboard
+                </a>
+              </div>
+
+              <div class="muted">
+                <i class="ri-lock-line"></i>
+                Password hanya dipakai untuk login lalu dibuang (tidak disimpan di server/DB).
+              </div>
             </form>
           </div>
 
+          <!-- OTP TAB -->
           <div data-tab="otp" style="display:none" id="otp">
-            <form method="post" action="/connect/otp/request" class="row" data-loading="1">
-              <div class="split">
-                <input class="inp" style="max-width:140px" name="countryCode" placeholder="Country" value="62" />
-                <input class="inp" name="phone" placeholder="Nomor HP (tanpa +)" />
+            <form method="post" action="/connect/otp/request" class="row" data-loading="1" id="otpRequestForm" autocomplete="on">
+              <div class="row" style="gap:8px">
+                <label class="muted" style="font-weight:900">Nomor WhatsApp/HP</label>
+                <div class="split" style="flex-wrap:nowrap">
+                  <input class="inp" style="max-width:120px" name="countryCode" placeholder="62" value="62" />
+                  <input class="inp" name="phone" placeholder="contoh: 812xxxxxxx (tanpa 0 depan, tanpa +)" inputmode="numeric" />
+                </div>
+                <div class="muted">
+                  Format disarankan: <b>812xxxxxxx</b> (bukan 0812…).
+                </div>
               </div>
-              <button class="btn primary" type="submit">
-                <i class="ri-send-plane-2-line"></i> Request OTP
-              </button>
+
+              <div class="actions">
+                <button class="btn primary" type="submit">
+                  <i class="ri-send-plane-2-line"></i> Request OTP
+                </button>
+                <button class="btn secondary" type="button" onclick="toastr.info('OTP akan muncul dalam modal setelah request sukses.')">
+                  <i class="ri-question-line"></i> Help
+                </button>
+              </div>
+
               <div class="muted">
-                Setelah klik Request OTP, sistem akan menampilkan modal verifikasi OTP.
-                Token OTP tidak ditampilkan ke user (tersimpan di cookie httpOnly terenkripsi).
+                Setelah klik <b>Request OTP</b>, modal verifikasi akan tampil otomatis.
+                Token OTP tidak pernah ditampilkan ke user (tersimpan di cookie httpOnly terenkripsi).
               </div>
             </form>
+
+            <div class="card soft" style="margin-top:12px; padding:12px">
+              <div style="font-weight:950; font-size:13.5px; display:flex; align-items:center; gap:8px">
+                <i class="ri-shield-keyhole-line"></i> Keamanan OTP
+              </div>
+              <div class="muted" style="margin-top:4px">
+                • OTP token disimpan sementara agar user tidak perlu copy token apapun.<br/>
+                • OTP akan expired otomatis sesuai batas waktu provider.
+              </div>
+            </div>
           </div>
         </div>
 
+        <!-- RIGHT: Privacy + Status -->
         <div class="card">
           <div class="title"><i class="ri-shield-check-line"></i> Privacy & Flow</div>
+
           <div class="muted">
-            <ul style="margin:0; padding-left:16px; line-height:1.7">
+            <ul style="margin:0; padding-left:16px; line-height:1.75">
               <li><b>Credential tidak disimpan</b> (email/password/OTP).</li>
               <li>Yang disimpan sementara: <b>token sesi</b> (terenkripsi) di cookie <b>httpOnly</b>.</li>
-              <li>Setelah connect, buka dashboard untuk ambil <b>Merchant ID</b> dan <b>Mutasi</b>.</li>
+              <li>Alur: <b>Connect</b> → <b>Get Merchant</b> → <b>Get Mutasi</b> (manual).</li>
             </ul>
           </div>
 
           <div style="height:14px"></div>
 
           <div class="actions">
-            <a class="btn secondary" href="/dashboard"><i class="ri-dashboard-line"></i> Open Dashboard</a>
+            <a class="btn secondary" href="/dashboard">
+              <i class="ri-dashboard-line"></i> Open Dashboard
+            </a>
             ${
               loggedIn
                 ? `<span class="pill"><i class="ri-checkbox-circle-line"></i> Logged In</span>`
@@ -114,11 +205,36 @@ const otpModalBody = `
 
           <div style="height:12px"></div>
 
-          <div class="muted">
-            Tip: versi ini tanpa DB. Kalau butuh super stabil (tanpa limit cookie), gunakan Redis/KV.
+          <div class="card soft" style="padding:12px">
+            <div style="font-weight:950;font-size:13.5px; display:flex; align-items:center; gap:8px">
+              <i class="ri-lightbulb-line"></i> Tips
+            </div>
+            <div class="muted" style="margin-top:4px">
+              Versi ini tanpa DB. Untuk super stabil (tanpa limit cookie/session),
+              gunakan Redis/KV untuk menyimpan session server-side.
+            </div>
           </div>
         </div>
       </div>
+
+      <script>
+        // password toggle
+        (function(){
+          const pw = document.getElementById("pw");
+          const t = document.getElementById("pwToggle");
+          if(!pw || !t) return;
+          t.addEventListener("click", ()=>{
+            const is = pw.getAttribute("type") === "password";
+            pw.setAttribute("type", is ? "text" : "password");
+            t.innerHTML = is ? '<i class="ri-eye-off-line"></i>' : '<i class="ri-eye-line"></i>';
+          });
+        })();
+
+        // keep tab based on hash
+        (function(){
+          if (location.hash === "#otp") window.setTab("otp");
+        })();
+      </script>
     `
   })
 %>

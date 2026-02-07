@@ -13,211 +13,388 @@
 
   <style>
     :root{
-      --bg:#0b0f17;
-      --panel:rgba(255,255,255,.06);
-      --line:rgba(255,255,255,.12);
-      --text:#fff;
-      --muted:rgba(255,255,255,.72);
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --r:16px;
+      /* LIGHT THEME */
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --muted: #5a6472;
+      --text: #0e1521;
+      --line: rgba(10, 20, 30, .10);
+
+      /* BRAND (hijau tua) */
+      --brand: #0f3d2e;
+      --brand2: #145a42;
+      --brandSoft: rgba(15,61,46,.10);
+
+      --shadow: 0 10px 30px rgba(16,24,40,.10);
+      --shadow2: 0 18px 50px rgba(16,24,40,.14);
+      --r: 18px;
     }
+
     *{box-sizing:border-box}
     body{
-      margin:0; color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      margin:0;
       background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       overflow-x:hidden;
     }
 
-    /* ambient background */
+    /* subtle background (clean, not AI glass) */
     .bg{
-      position:fixed; inset:0; z-index:-2;
+      position:fixed; inset:0; z-index:-1;
       background:
-        radial-gradient(1000px 700px at 12% 10%, rgba(99,102,241,.16), transparent 60%),
-        radial-gradient(900px 600px at 88% 22%, rgba(34,197,94,.10), transparent 60%),
-        radial-gradient(900px 650px at 45% 92%, rgba(244,63,94,.10), transparent 60%),
-        #0b0f17;
-      filter:saturate(110%);
+        radial-gradient(800px 520px at 15% 10%, rgba(15,61,46,.10), transparent 55%),
+        radial-gradient(750px 520px at 90% 25%, rgba(15,61,46,.07), transparent 55%),
+        radial-gradient(800px 560px at 55% 95%, rgba(20,90,66,.06), transparent 55%),
+        linear-gradient(#f6f7fb, #f6f7fb);
     }
-    .grain{
-      position:fixed; inset:-40px; z-index:-1;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
-      opacity:.28; mix-blend-mode:overlay; pointer-events:none;
-      animation: drift 14s linear infinite;
-    }
-    @keyframes drift{ from{transform:translate3d(0,0,0)} to{transform:translate3d(-40px,30px,0)} }
 
-    .wrap{max-width:1040px;margin:0 auto;padding:22px;display:grid;gap:14px}
+    .wrap{max-width:1080px;margin:0 auto;padding:18px;display:grid;gap:14px}
+
+    /* header */
     .topbar{
       display:flex;justify-content:space-between;align-items:center;gap:12px;
-      padding:14px 14px;border-radius:18px;border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      box-shadow:var(--shadow);
-      backdrop-filter: blur(10px);
+      padding:14px 14px;
+      border-radius: 18px;
+      border:1px solid var(--line);
+      background: var(--card);
+      box-shadow: var(--shadow);
     }
-    .brand{display:flex;align-items:center;gap:10px}
+    .brand{
+      display:flex;align-items:center;gap:12px;min-width:0;
+    }
     .logo{
-      width:38px;height:38px;border-radius:14px;
-      border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
+      width:42px;height:42px;border-radius:14px;
       display:grid;place-items:center;
+      background: var(--brandSoft);
+      border:1px solid rgba(15,61,46,.15);
+      color: var(--brand);
+      flex:0 0 auto;
     }
-    .brand h1{margin:0;font-size:14px;letter-spacing:.2px}
-    .brand .sub{color:var(--muted);font-size:12px;margin-top:2px}
+    .brand h1{
+      margin:0;
+      font-size:14.5px;
+      font-weight:950;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brand .sub{
+      margin-top:2px;
+      color: var(--muted);
+      font-size:12.5px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:9px 12px;border-radius:999px;
+      background: rgba(15,61,46,.08);
+      border: 1px solid rgba(15,61,46,.14);
+      color: var(--brand);
+      font-weight:900;
+      font-size:12.5px;
+      flex:0 0 auto;
+    }
 
-    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
-    @media (max-width: 920px){ .grid{grid-template-columns:1fr} }
+    /* layout */
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+    }
+    @media (max-width: 920px){
+      .grid{ grid-template-columns: 1fr; }
+      .wrap{ padding:14px; }
+      .pill{ display:none; }
+    }
 
+    /* cards */
     .card{
+      background: var(--card);
       border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      border-radius:var(--r);
-      padding:14px;
-      box-shadow:var(--shadow);
-      backdrop-filter: blur(10px);
-      transform: translateY(6px);
-      opacity: 0;
-      animation: enter .45s ease forwards;
+      border-radius: var(--r);
+      padding: 14px;
+      box-shadow: var(--shadow);
     }
-    @keyframes enter{ to{ transform: translateY(0); opacity:1 } }
+    .card.soft{
+      background: rgba(255,255,255,.75);
+      box-shadow: none;
+    }
 
-    .muted{color:var(--muted);font-size:12.8px;line-height:1.45}
-    .title{font-weight:900;font-size:14px;margin:0 0 10px 0;display:flex;align-items:center;gap:10px}
+    .title{
+      margin:0 0 10px 0;
+      display:flex;align-items:center;gap:10px;
+      font-weight:950;
+      font-size:15px;
+      letter-spacing:.1px;
+    }
+    .muted{
+      color: var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
     .row{display:grid;gap:10px}
-    .inp{
-      width:100%; padding:12px 12px;
-      border-radius:14px;border:1px solid var(--line);
-      background:rgba(255,255,255,.04); color:var(--text);
-      outline:none;
-      transition: transform .12s ease, border-color .12s ease, background .12s ease;
-    }
-    .inp:focus{ border-color: rgba(255,255,255,.24); background:rgba(255,255,255,.06); transform: translateY(-1px); }
+    .split{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
+    /* segmented tabs */
+    .tabs{
+      display:flex;
+      padding:6px;
+      border-radius: 999px;
+      border:1px solid var(--line);
+      background: #f2f4f8;
+      gap:6px;
+    }
+    .tab{
+      flex:1;
+      border:0;
+      border-radius: 999px;
+      padding: 11px 12px;
+      background: transparent;
+      color: #334155;
+      font-weight: 950;
+      display:flex;justify-content:center;align-items:center;gap:8px;
+      cursor:pointer;
+      transition: background .12s ease, transform .12s ease;
+    }
+    .tab:hover{ transform: translateY(-1px); }
+    .tab.active{
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(16,24,40,.10);
+      color: var(--brand);
+    }
+
+    /* inputs */
+    .inp{
+      height: 48px;
+      width: 100%;
+      padding: 0 12px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background: #fbfcff;
+      color: var(--text);
+      outline:none;
+      transition: border-color .12s ease, box-shadow .12s ease;
+    }
+    .inp:focus{
+      border-color: rgba(15,61,46,.35);
+      box-shadow: 0 0 0 4px rgba(15,61,46,.10);
+    }
+    .inp::placeholder{ color: rgba(90,100,114,.70); }
+
+    /* buttons */
     .btn{
-      padding:12px 12px;border-radius:14px;
-      border:1px solid rgba(255,255,255,.16);
-      background:rgba(255,255,255,.10);
-      color:var(--text); font-weight:900; cursor:pointer;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
-      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      height: 46px;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(15,61,46,.20);
+      background: rgba(15,61,46,.10);
+      color: var(--brand);
+      font-weight: 950;
+      cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      transition: transform .12s ease, background .12s ease;
       user-select:none;
     }
-    .btn:hover{ transform: translateY(-1px); background:rgba(255,255,255,.13); border-color: rgba(255,255,255,.22); }
+    .btn:hover{ transform: translateY(-1px); background: rgba(15,61,46,.14); }
     .btn:active{ transform: translateY(0px) scale(.99); }
-    .btn.secondary{ background:rgba(255,255,255,.06); }
-    .btn.danger{ background: rgba(255,80,80,.14); border-color: rgba(255,80,80,.30); }
+    .btn.primary{
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+    .btn.primary:hover{ background: var(--brand2); }
+    .btn.secondary{
+      background: #fff;
+      border-color: var(--line);
+      color: #0e1521;
+    }
+    .btn.danger{
+      background: rgba(220,38,38,.10);
+      border-color: rgba(220,38,38,.20);
+      color: #b91c1c;
+    }
     .btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
 
-    .tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab{
-      padding:10px 12px;border-radius:999px;border:1px solid var(--line);
-      background:rgba(255,255,255,.05); color:var(--text);
-      cursor:pointer; font-weight:900; font-size:12.5px;
-      transition: background .12s ease, transform .12s ease;
-      display:flex; align-items:center; gap:8px;
-    }
-    .tab.active{ background: rgba(255,255,255,.11); }
-    .tab:hover{ transform: translateY(-1px); }
-
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:9px 12px; border-radius:999px;
-      border:1px solid var(--line); background:rgba(255,255,255,.05);
-      color:var(--muted); font-size:12.5px;
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    @media (max-width: 420px){
+      .btn{ width:100%; }
+      .actions{ gap:8px; }
     }
 
+    /* JSON */
     pre{
       margin:0;
       padding:14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.28);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
-      white-space:pre-wrap;
-      overflow:auto;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      background: #0b1220;
+      color:#e7eefc;
       font-size:12px;
-      line-height:1.45;
+      line-height:1.5;
+      overflow:auto;
+      box-shadow: var(--shadow2);
     }
 
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
-    .split{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    /* ===== Modal OTP ===== */
+    .modal{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+      z-index: 80;
+      background: rgba(2,6,23,.45);
+      backdrop-filter: blur(6px);
+    }
+    .modal.show{ display:flex; }
+    .modal-card{
+      width: min(520px, 100%);
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid rgba(15,61,46,.16);
+      box-shadow: 0 30px 80px rgba(2,6,23,.35);
+      overflow:hidden;
+    }
+    .modal-head{
+      padding: 14px 14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(15,61,46,.08), rgba(15,61,46,0));
+    }
+    .modal-head .h{
+      display:flex;align-items:center;gap:10px;
+      font-weight: 950;
+      color: var(--brand);
+    }
+    .xbtn{
+      width: 40px;height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      cursor:pointer;
+      display:grid;place-items:center;
+    }
+    .modal-body{ padding: 14px; }
+
+    .otp-timer{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;
+      border-radius: 999px;
+      background: rgba(15,61,46,.08);
+      border: 1px solid rgba(15,61,46,.14);
+      color: var(--brand);
+      font-weight: 950;
+      font-size: 12.5px;
+    }
+
+    .otp-grid{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+    .otp-box{
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fbfcff;
+      text-align:center;
+      font-size: 18px;
+      font-weight: 950;
+      outline:none;
+      transition: box-shadow .12s ease, border-color .12s ease, transform .12s ease;
+    }
+    .otp-box:focus{
+      border-color: rgba(15,61,46,.35);
+      box-shadow: 0 0 0 4px rgba(15,61,46,.12);
+      transform: translateY(-1px);
+    }
+    .otp-box.filled{
+      border-color: rgba(15,61,46,.22);
+      background: rgba(15,61,46,.05);
+    }
+    @media (max-width: 420px){
+      .otp-grid{ gap:8px; }
+      .otp-box{ height: 48px; font-size: 17px; }
+    }
+
+    .otp-hint{
+      margin-top: 10px;
+      font-size: 12.8px;
+      color: var(--muted);
+      line-height:1.4;
+    }
+    .otp-hint.err{ color: #b91c1c; }
+
+    @keyframes shakeSoft {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-3px); }
+    }
+    .shakeSoft { animation: shakeSoft .28s ease; }
 
     /* loading overlay */
     .overlay{
       position:fixed; inset:0;
-      background:rgba(10,12,18,.55);
-      backdrop-filter: blur(10px);
+      background: rgba(2,6,23,.35);
+      backdrop-filter: blur(6px);
       display:none; align-items:center; justify-content:center;
-      z-index:50;
+      z-index: 90;
     }
     .overlay.show{ display:flex; }
     .spinner{
       width:54px;height:54px;border-radius:999px;
-      border:2px solid rgba(255,255,255,.14);
-      border-top-color: rgba(255,255,255,.75);
+      border:3px solid rgba(255,255,255,.25);
+      border-top-color: rgba(255,255,255,.95);
       animation: spin .8s linear infinite;
     }
     @keyframes spin{ to{ transform: rotate(360deg) } }
-
-    /* OTP grid */
-    .otp-grid{
-      display:grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap:10px;
-    }
-    .otp-box{
-      height:54px;
-      text-align:center;
-      font-size:20px;
-      font-weight:900;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      color:var(--text);
-      outline:none;
-      transition: transform .12s ease, border-color .12s ease, background .12s ease;
-    }
-    .otp-box:focus{
-      transform: translateY(-1px);
-      border-color: rgba(255,255,255,.28);
-      background: rgba(255,255,255,.08);
-    }
-    @media (max-width: 420px){
-      .otp-box{ height:48px; font-size:18px; }
-    }
-
-    /* shake */
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      20% { transform: translateX(-7px); }
-      40% { transform: translateX(7px); }
-      60% { transform: translateX(-5px); }
-      80% { transform: translateX(5px); }
-    }
-    .shake { animation: shake .35s ease; border-color: rgba(255,80,80,.35) !important; }
   </style>
 </head>
 <body>
   <div class="bg"></div>
-  <div class="grain"></div>
 
   <div class="overlay" id="overlay">
     <div style="display:grid;gap:12px;place-items:center">
       <div class="spinner"></div>
-      <div class="muted" style="text-align:center">Processing...</div>
+      <div class="muted" style="color:#fff;text-align:center">Processing...</div>
+    </div>
+  </div>
+
+  <!-- OTP MODAL -->
+  <div class="modal" id="otpModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="OTP Verification">
+      <div class="modal-head">
+        <div class="h"><i class="ri-shield-keyhole-line"></i> Verifikasi OTP</div>
+        <button class="xbtn" type="button" id="otpCloseBtn" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <%- (otp_modal_body || "") %>
+      </div>
     </div>
   </div>
 
   <div class="wrap">
     <div class="topbar">
       <div class="brand">
-        <div class="logo"><i class="ri-shield-keyhole-line"></i></div>
-        <div>
+        <div class="logo"><i class="ri-leaf-line"></i></div>
+        <div style="min-width:0">
           <h1>GoBiz Connect Toolkit</h1>
           <div class="sub">Manual: Connect → Merchant → Mutasi (Simple JSON)</div>
         </div>
       </div>
-      <div class="pill"><i class="ri-information-line"></i> Credential tidak disimpan</div>
+      <div class="pill"><i class="ri-lock-line"></i> Credential tidak disimpan</div>
     </div>
 
     <%- body %>
@@ -231,15 +408,15 @@
     toastr.options = {
       closeButton: true,
       progressBar: true,
-      positionClass: "toast-bottom-right",
-      timeOut: "3500",
+      positionClass: "toast-top-right",
+      timeOut: "3200",
       extendedTimeOut: "1200",
       showDuration: "150",
       hideDuration: "150"
     };
 
     // loading overlay for forms
-    (function bindLoading(){
+    (function(){
       const overlay = document.getElementById("overlay");
       document.querySelectorAll("form[data-loading='1']").forEach((f)=>{
         f.addEventListener("submit", ()=>{
@@ -258,6 +435,17 @@
       else toastr.info(m);
     }
 
+    // segmented tabs
+    window.setTab = (tabId) => {
+      document.querySelectorAll("[data-tab]").forEach(el => el.style.display = "none");
+      document.querySelectorAll("[data-tabbtn]").forEach(el => el.classList.remove("active"));
+      const tab = document.querySelector("[data-tab='"+tabId+"']");
+      const btn = document.querySelector("[data-tabbtn='"+tabId+"']");
+      if (tab) tab.style.display = "block";
+      if (btn) btn.classList.add("active");
+      location.hash = tabId === "otp" ? "otp" : "";
+    };
+
     // copy helper
     window.copyText = async (id) => {
       const el = document.getElementById(id);
@@ -269,231 +457,226 @@
         toastr.error("Copy failed");
       }
     };
-
-    // tabs
-    window.setTab = (tabId) => {
-      document.querySelectorAll("[data-tab]").forEach(el => el.style.display = "none");
-      document.querySelectorAll("[data-tabbtn]").forEach(el => el.classList.remove("active"));
-      const tab = document.querySelector("[data-tab='"+tabId+"']");
-      const btn = document.querySelector("[data-tabbtn='"+tabId+"']");
-      if (tab) tab.style.display = "block";
-      if (btn) btn.classList.add("active");
-      location.hash = tabId === "otp" ? "otp" : "";
-    };
-    if (location.hash === "#otp") setTab("otp");
-    else setTab("email");
   </script>
 
-  <!-- OTP 6-box + countdown + shake + auto-submit -->
+  <!-- OTP Modal + OTP 6 box + countdown + autosubmit -->
   <script>
-    (function(){
-      const grid = document.getElementById("otpGrid");
-      const hidden = document.getElementById("otpHidden");
-      const form = document.getElementById("otpVerifyForm");
-      const btn = document.getElementById("otpVerifyBtn");
-      const clearBtn = document.getElementById("otpClearBtn");
-      const countdownEl = document.getElementById("otpCountdown");
-      const hint = document.getElementById("otpHint");
-      const pill = document.getElementById("otpPill");
-      const overlay = document.getElementById("overlay");
+  (function(){
+    const modal = document.getElementById("otpModal");
+    const closeBtn = document.getElementById("otpCloseBtn");
 
-      if (!grid || !hidden || !form) return;
+    // OTP elements live in modal body
+    const getEl = (id) => document.getElementById(id);
 
-      const boxes = Array.from(grid.querySelectorAll("input.otp-box"));
-      const OTP_LEN = 6;
+    function showModal(){
+      if (!modal) return;
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      // focus first otp box after a tick
+      setTimeout(()=>{
+        const grid = getEl("otpGrid");
+        if (!grid) return;
+        const first = grid.querySelector("input.otp-box");
+        if (first) first.focus();
+      }, 50);
+    }
 
-      function shake(target){
-        if (!target) return;
-        target.classList.remove("shake");
-        // reflow
-        void target.offsetWidth;
-        target.classList.add("shake");
-        setTimeout(()=>target.classList.remove("shake"), 420);
-      }
+    function hideModal(){
+      if (!modal) return;
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
 
-      function setHint(text, isError){
-        if (!hint) return;
-        hint.style.display = text ? "block" : "none";
-        hint.style.color = isError ? "rgba(255,120,120,.95)" : "rgba(255,255,255,.72)";
-        hint.textContent = text || "";
-      }
-
-      function sanitizeDigit(v){ return (v || "").replace(/\\D/g, "").slice(0,1); }
-      function readOtp(){ return boxes.map(b => (b.value || "").trim()).join(""); }
-
-      let active = false;
-      let expiresAt = 0;
-      let submitting = false;
-
-      function syncHidden(){
-        const otp = readOtp();
-        hidden.value = otp;
-        if (btn) btn.disabled = (!active) || otp.length !== OTP_LEN || submitting;
-      }
-
-      function focusAt(i){
-        const el = boxes[i];
-        if (el) el.focus();
-      }
-
-      async function submitIfReady() {
-        const otp = readOtp();
-        if (!active) return;
-        if (submitting) return;
-        if (otp.length !== OTP_LEN) return;
-
-        // auto-submit with overlay & toastr
-        submitting = true;
-        syncHidden();
-
-        if (overlay) overlay.classList.add("show");
-        try {
-          // native submit triggers your backend flow
-          form.requestSubmit ? form.requestSubmit() : form.submit();
-        } catch {
-          submitting = false;
-          if (overlay) overlay.classList.remove("show");
-          toastr.error("Submit failed");
-        }
-      }
-
-      boxes.forEach((b, i) => {
-        b.addEventListener("input", async () => {
-          b.value = sanitizeDigit(b.value);
-          syncHidden();
-          if (b.value && i < boxes.length - 1) focusAt(i + 1);
-
-          // auto-submit when last digit filled
-          await submitIfReady();
-        });
-
-        b.addEventListener("keydown", (e) => {
-          if (e.key === "Backspace" && !b.value && i > 0) {
-            boxes[i - 1].value = "";
-            focusAt(i - 1);
-            syncHidden();
-          }
-          if (e.key === "ArrowLeft" && i > 0) focusAt(i - 1);
-          if (e.key === "ArrowRight" && i < boxes.length - 1) focusAt(i + 1);
-        });
-
-        b.addEventListener("paste", async (e) => {
-          const text = (e.clipboardData || window.clipboardData).getData("text") || "";
-          const digits = text.replace(/\\D/g, "").slice(0, OTP_LEN);
-          if (!digits) return;
-          e.preventDefault();
-          for (let k = 0; k < boxes.length; k++) boxes[k].value = digits[k] || "";
-          syncHidden();
-          focusAt(Math.min(digits.length, boxes.length - 1));
-          await submitIfReady();
-        });
+    if (closeBtn) closeBtn.addEventListener("click", hideModal);
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) hideModal();
       });
+    }
+    window.__showOtpModal = showModal;
+    window.__hideOtpModal = hideModal;
 
-      if (clearBtn){
-        clearBtn.addEventListener("click", () => {
-          boxes.forEach(b => b.value = "");
-          submitting = false;
-          syncHidden();
-          focusAt(0);
-          setHint("", false);
-        });
+    // auto open modal if query otp=1
+    const usp = new URLSearchParams(location.search);
+    if (usp.get("otp") === "1") showModal();
+
+    // ===== OTP logic =====
+    const form = getEl("otpVerifyForm");
+    const grid = getEl("otpGrid");
+    const hidden = getEl("otpHidden");
+    const btn = getEl("otpVerifyBtn");
+    const clearBtn = getEl("otpClearBtn");
+    const countdownEl = getEl("otpCountdown");
+    const hint = getEl("otpHint");
+    const overlay = getEl("overlay");
+
+    if (!form || !grid || !hidden) return;
+
+    const boxes = Array.from(grid.querySelectorAll("input.otp-box"));
+    const OTP_LEN = 6;
+
+    let active = false;
+    let expiresAt = 0;
+    let submitting = false;
+
+    function shakeSoft(){
+      grid.classList.remove("shakeSoft");
+      void grid.offsetWidth;
+      grid.classList.add("shakeSoft");
+      setTimeout(()=>grid.classList.remove("shakeSoft"), 320);
+    }
+    function setHint(text, isError){
+      if (!hint) return;
+      hint.textContent = text || "";
+      hint.classList.toggle("err", !!isError);
+    }
+    function sanitizeDigit(v){ return (v||"").replace(/\D/g,"").slice(0,1); }
+    function readOtp(){ return boxes.map(b => (b.value||"").trim()).join(""); }
+
+    function syncUI(){
+      const otp = readOtp();
+      hidden.value = otp;
+
+      boxes.forEach(b => b.classList.toggle("filled", !!b.value));
+
+      if (btn) btn.disabled = (!active) || otp.length !== OTP_LEN || submitting;
+
+      if (!active) setHint("Klik Request OTP dulu.", false);
+      else if (expiresAt && Date.now() > expiresAt) setHint("OTP expired. Request ulang.", true);
+      else setHint(" ", false);
+    }
+
+    function focusAt(i){ const el = boxes[i]; if (el) el.focus(); }
+
+    async function submitIfReady(){
+      const otp = readOtp();
+      if (!active) return;
+      if (expiresAt && Date.now() > expiresAt) return;
+      if (submitting) return;
+      if (otp.length !== OTP_LEN) return;
+
+      submitting = true;
+      syncUI();
+
+      if (overlay) overlay.classList.add("show");
+      try{
+        form.requestSubmit ? form.requestSubmit() : form.submit();
+      } catch {
+        submitting = false;
+        if (overlay) overlay.classList.remove("show");
+        toastr.error("Submit gagal");
       }
+    }
 
-      // before submit: prevent if not ready
-      form.addEventListener("submit", (e) => {
-        const otp = readOtp();
-        if (!active) {
-          e.preventDefault();
-          setHint("Klik Request OTP dulu.", true);
-          toastr.warning("Klik Request OTP dulu");
-          shake(grid);
-          return;
-        }
-        if (!expiresAt || Date.now() > expiresAt) {
-          e.preventDefault();
-          setHint("OTP expired. Request OTP ulang.", true);
-          toastr.error("OTP expired. Request OTP ulang.");
-          shake(grid);
-          return;
-        }
-        if (otp.length !== OTP_LEN) {
-          e.preventDefault();
-          setHint("OTP belum lengkap.", true);
-          toastr.warning("OTP belum lengkap");
-          shake(grid);
-          return;
-        }
+    boxes.forEach((b, i) => {
+      b.addEventListener("input", async () => {
+        b.value = sanitizeDigit(b.value);
+        syncUI();
+        if (b.value && i < boxes.length - 1) focusAt(i + 1);
+        await submitIfReady();
       });
-
-      async function fetchStatus(){
-        try{
-          const r = await fetch("/otp/status", { cache: "no-store" });
-          const j = await r.json();
-
-          active = !!j.active;
-          expiresAt = Number(j.expiresAt || 0) || 0;
-
-          if (!active){
-            if (pill) pill.style.opacity = 0.7;
-            if (countdownEl) countdownEl.textContent = "--:--";
-            setHint("Klik Request OTP dulu.", false);
-            submitting = false;
-            syncHidden();
-            return;
-          }
-          if (pill) pill.style.opacity = 1;
-          setHint("", false);
-          syncHidden();
-        } catch {}
-      }
-
-      function fmt(sec){
-        const s = Math.max(0, sec|0);
-        const m = Math.floor(s/60);
-        const r = s%60;
-        return String(m).padStart(2,"0") + ":" + String(r).padStart(2,"0");
-      }
-
-      function tick(){
-        if (!countdownEl) return;
-        if (!active || !expiresAt){
-          countdownEl.textContent = "--:--";
-          return;
+      b.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !b.value && i > 0) {
+          boxes[i - 1].value = "";
+          focusAt(i - 1);
+          syncUI();
         }
-        const left = Math.ceil((expiresAt - Date.now()) / 1000);
-        countdownEl.textContent = fmt(left);
+        if (e.key === "ArrowLeft" && i > 0) focusAt(i - 1);
+        if (e.key === "ArrowRight" && i < boxes.length - 1) focusAt(i + 1);
+      });
+      b.addEventListener("paste", async (e) => {
+        const text = (e.clipboardData || window.clipboardData).getData("text") || "";
+        const digits = text.replace(/\D/g, "").slice(0, OTP_LEN);
+        if (!digits) return;
+        e.preventDefault();
+        for (let k = 0; k < boxes.length; k++) boxes[k].value = digits[k] || "";
+        syncUI();
+        focusAt(Math.min(digits.length, boxes.length - 1));
+        await submitIfReady();
+      });
+    });
 
-        if (left <= 0){
-          active = false;
-          submitting = false;
-          syncHidden();
-          setHint("OTP expired. Request OTP ulang.", true);
-          toastr.error("OTP expired. Request OTP ulang.");
-          shake(grid);
-        }
-      }
-
-      async function initOtpUI(){
+    if (clearBtn){
+      clearBtn.addEventListener("click", () => {
         boxes.forEach(b => b.value = "");
         submitting = false;
-        syncHidden();
+        syncUI();
         focusAt(0);
-        await fetchStatus();
-        tick();
+      });
+    }
+
+    form.addEventListener("submit", (e) => {
+      const otp = readOtp();
+      if (!active){
+        e.preventDefault();
+        setHint("Klik Request OTP dulu.", true);
+        shakeSoft();
+        toastr.warning("Request OTP dulu");
+        return;
       }
+      if (expiresAt && Date.now() > expiresAt){
+        e.preventDefault();
+        setHint("OTP expired. Request ulang.", true);
+        shakeSoft();
+        toastr.error("OTP expired. Request ulang.");
+        return;
+      }
+      if (otp.length !== OTP_LEN){
+        e.preventDefault();
+        setHint("OTP belum lengkap.", true);
+        shakeSoft();
+        toastr.warning("OTP belum lengkap");
+        return;
+      }
+    });
 
-      // hook tab switch to init
-      const _setTab = window.setTab;
-      window.setTab = function(tabId){
-        _setTab(tabId);
-        if (tabId === "otp") initOtpUI();
-      };
+    async function fetchStatus(){
+      try{
+        const r = await fetch("/otp/status", { cache: "no-store" });
+        const j = await r.json();
+        active = !!j.active;
+        expiresAt = Number(j.expiresAt || 0) || 0;
 
-      if (location.hash === "#otp") initOtpUI();
+        // if active but modal not shown, show it (good UX)
+        if (active && modal && !modal.classList.contains("show")) showModal();
 
-      setInterval(fetchStatus, 5000);
-      setInterval(tick, 1000);
-    })();
+        syncUI();
+      } catch {}
+    }
+
+    function fmt(sec){
+      const s = Math.max(0, sec|0);
+      const m = Math.floor(s/60);
+      const r = s%60;
+      return String(m).padStart(2,"0")+":"+String(r).padStart(2,"0");
+    }
+
+    function tick(){
+      if (!countdownEl) return;
+      if (!active || !expiresAt){
+        countdownEl.textContent = "--:--";
+        return;
+      }
+      const left = Math.ceil((expiresAt - Date.now()) / 1000);
+      countdownEl.textContent = fmt(left);
+
+      if (left <= 0){
+        active = false;
+        submitting = false;
+        syncUI();
+        shakeSoft();
+        toastr.error("OTP expired. Request ulang.");
+      }
+    }
+
+    // init
+    fetchStatus();
+    tick();
+    setInterval(fetchStatus, 5000);
+    setInterval(tick, 1000);
+  })();
   </script>
 </body>
 </html>

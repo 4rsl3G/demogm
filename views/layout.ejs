@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= title %></title>
+
+  <!-- RemixIcon -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- Toastr -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0b0f17;
+      --panel:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.12);
+      --text:#fff;
+      --muted:rgba(255,255,255,.72);
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --r:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      overflow-x:hidden;
+    }
+
+    /* ambient background */
+    .bg{
+      position:fixed; inset:0; z-index:-2;
+      background:
+        radial-gradient(1000px 700px at 12% 10%, rgba(99,102,241,.16), transparent 60%),
+        radial-gradient(900px 600px at 88% 22%, rgba(34,197,94,.10), transparent 60%),
+        radial-gradient(900px 650px at 45% 92%, rgba(244,63,94,.10), transparent 60%),
+        #0b0f17;
+      filter:saturate(110%);
+    }
+    .grain{
+      position:fixed; inset:-40px; z-index:-1;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+      opacity:.28; mix-blend-mode:overlay; pointer-events:none;
+      animation: drift 14s linear infinite;
+    }
+    @keyframes drift{ from{transform:translate3d(0,0,0)} to{transform:translate3d(-40px,30px,0)} }
+
+    .wrap{max-width:1040px;margin:0 auto;padding:22px;display:grid;gap:14px}
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      padding:14px 14px;border-radius:18px;border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{
+      width:38px;height:38px;border-radius:14px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
+      display:grid;place-items:center;
+    }
+    .brand h1{margin:0;font-size:14px;letter-spacing:.2px}
+    .brand .sub{color:var(--muted);font-size:12px;margin-top:2px}
+
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+    @media (max-width: 920px){ .grid{grid-template-columns:1fr} }
+
+    .card{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      border-radius:var(--r);
+      padding:14px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(10px);
+      transform: translateY(6px);
+      opacity: 0;
+      animation: enter .45s ease forwards;
+    }
+    @keyframes enter{ to{ transform: translateY(0); opacity:1 } }
+
+    .muted{color:var(--muted);font-size:12.8px;line-height:1.45}
+    .title{font-weight:900;font-size:14px;margin:0 0 10px 0;display:flex;align-items:center;gap:10px}
+    .row{display:grid;gap:10px}
+    .inp{
+      width:100%; padding:12px 12px;
+      border-radius:14px;border:1px solid var(--line);
+      background:rgba(255,255,255,.04); color:var(--text);
+      outline:none;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .inp:focus{ border-color: rgba(255,255,255,.24); background:rgba(255,255,255,.06); transform: translateY(-1px); }
+
+    .btn{
+      padding:12px 12px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.10);
+      color:var(--text); font-weight:900; cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-1px); background:rgba(255,255,255,.13); border-color: rgba(255,255,255,.22); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn.secondary{ background:rgba(255,255,255,.06); }
+    .btn.danger{ background: rgba(255,80,80,.14); border-color: rgba(255,80,80,.30); }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{
+      padding:10px 12px;border-radius:999px;border:1px solid var(--line);
+      background:rgba(255,255,255,.05); color:var(--text);
+      cursor:pointer; font-weight:900; font-size:12.5px;
+      transition: background .12s ease, transform .12s ease;
+      display:flex; align-items:center; gap:8px;
+    }
+    .tab.active{ background: rgba(255,255,255,.11); }
+    .tab:hover{ transform: translateY(-1px); }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:9px 12px; border-radius:999px;
+      border:1px solid var(--line); background:rgba(255,255,255,.05);
+      color:var(--muted); font-size:12.5px;
+    }
+
+    pre{
+      margin:0;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.28);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+      white-space:pre-wrap;
+      overflow:auto;
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .split{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+    /* loading overlay */
+    .overlay{
+      position:fixed; inset:0;
+      background:rgba(10,12,18,.55);
+      backdrop-filter: blur(10px);
+      display:none; align-items:center; justify-content:center;
+      z-index:50;
+    }
+    .overlay.show{ display:flex; }
+    .spinner{
+      width:54px;height:54px;border-radius:999px;
+      border:2px solid rgba(255,255,255,.14);
+      border-top-color: rgba(255,255,255,.75);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg) } }
+
+    /* OTP grid */
+    .otp-grid{
+      display:grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap:10px;
+    }
+    .otp-box{
+      height:54px;
+      text-align:center;
+      font-size:20px;
+      font-weight:900;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      outline:none;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .otp-box:focus{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,.28);
+      background: rgba(255,255,255,.08);
+    }
+    @media (max-width: 420px){
+      .otp-box{ height:48px; font-size:18px; }
+    }
+
+    /* shake */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-7px); }
+      40% { transform: translateX(7px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+    .shake { animation: shake .35s ease; border-color: rgba(255,80,80,.35) !important; }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grain"></div>
+
+  <div class="overlay" id="overlay">
+    <div style="display:grid;gap:12px;place-items:center">
+      <div class="spinner"></div>
+      <div class="muted" style="text-align:center">Processing...</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"><i class="ri-shield-keyhole-line"></i></div>
+        <div>
+          <h1>GoBiz Connect Toolkit</h1>
+          <div class="sub">Manual: Connect → Merchant → Mutasi (Simple JSON)</div>
+        </div>
+      </div>
+      <div class="pill"><i class="ri-information-line"></i> Credential tidak disimpan</div>
+    </div>
+
+    <%- body %>
+  </div>
+
+  <!-- Toastr -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+  <script>
+    toastr.options = {
+      closeButton: true,
+      progressBar: true,
+      positionClass: "toast-bottom-right",
+      timeOut: "3500",
+      extendedTimeOut: "1200",
+      showDuration: "150",
+      hideDuration: "150"
+    };
+
+    // loading overlay for forms
+    (function bindLoading(){
+      const overlay = document.getElementById("overlay");
+      document.querySelectorAll("form[data-loading='1']").forEach((f)=>{
+        f.addEventListener("submit", ()=>{
+          overlay.classList.add("show");
+          setTimeout(()=>overlay.classList.remove("show"), 12000);
+        });
+      });
+    })();
+
+    // toast from server
+    window.__TOAST__ = <%- JSON.stringify(toast || null) %>;
+    if (window.__TOAST__) {
+      const t = window.__TOAST__.type || "info";
+      const m = window.__TOAST__.message || "";
+      if (toastr[t]) toastr[t](m);
+      else toastr.info(m);
+    }
+
+    // copy helper
+    window.copyText = async (id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      try {
+        await navigator.clipboard.writeText(el.innerText || el.textContent || "");
+        toastr.success("Copied!");
+      } catch {
+        toastr.error("Copy failed");
+      }
+    };
+
+    // tabs
+    window.setTab = (tabId) => {
+      document.querySelectorAll("[data-tab]").forEach(el => el.style.display = "none");
+      document.querySelectorAll("[data-tabbtn]").forEach(el => el.classList.remove("active"));
+      const tab = document.querySelector("[data-tab='"+tabId+"']");
+      const btn = document.querySelector("[data-tabbtn='"+tabId+"']");
+      if (tab) tab.style.display = "block";
+      if (btn) btn.classList.add("active");
+      location.hash = tabId === "otp" ? "otp" : "";
+    };
+    if (location.hash === "#otp") setTab("otp");
+    else setTab("email");
+  </script>
+
+  <!-- OTP 6-box + countdown + shake + auto-submit -->
+  <script>
+    (function(){
+      const grid = document.getElementById("otpGrid");
+      const hidden = document.getElementById("otpHidden");
+      const form = document.getElementById("otpVerifyForm");
+      const btn = document.getElementById("otpVerifyBtn");
+      const clearBtn = document.getElementById("otpClearBtn");
+      const countdownEl = document.getElementById("otpCountdown");
+      const hint = document.getElementById("otpHint");
+      const pill = document.getElementById("otpPill");
+      const overlay = document.getElementById("overlay");
+
+      if (!grid || !hidden || !form) return;
+
+      const boxes = Array.from(grid.querySelectorAll("input.otp-box"));
+      const OTP_LEN = 6;
+
+      function shake(target){
+        if (!target) return;
+        target.classList.remove("shake");
+        // reflow
+        void target.offsetWidth;
+        target.classList.add("shake");
+        setTimeout(()=>target.classList.remove("shake"), 420);
+      }
+
+      function setHint(text, isError){
+        if (!hint) return;
+        hint.style.display = text ? "block" : "none";
+        hint.style.color = isError ? "rgba(255,120,120,.95)" : "rgba(255,255,255,.72)";
+        hint.textContent = text || "";
+      }
+
+      function sanitizeDigit(v){ return (v || "").replace(/\\D/g, "").slice(0,1); }
+      function readOtp(){ return boxes.map(b => (b.value || "").trim()).join(""); }
+
+      let active = false;
+      let expiresAt = 0;
+      let submitting = false;
+
+      function syncHidden(){
+        const otp = readOtp();
+        hidden.value = otp;
+        if (btn) btn.disabled = (!active) || otp.length !== OTP_LEN || submitting;
+      }
+
+      function focusAt(i){
+        const el = boxes[i];
+        if (el) el.focus();
+      }
+
+      async function submitIfReady() {
+        const otp = readOtp();
+        if (!active) return;
+        if (submitting) return;
+        if (otp.length !== OTP_LEN) return;
+
+        // auto-submit with overlay & toastr
+        submitting = true;
+        syncHidden();
+
+        if (overlay) overlay.classList.add("show");
+        try {
+          // native submit triggers your backend flow
+          form.requestSubmit ? form.requestSubmit() : form.submit();
+        } catch {
+          submitting = false;
+          if (overlay) overlay.classList.remove("show");
+          toastr.error("Submit failed");
+        }
+      }
+
+      boxes.forEach((b, i) => {
+        b.addEventListener("input", async () => {
+          b.value = sanitizeDigit(b.value);
+          syncHidden();
+          if (b.value && i < boxes.length - 1) focusAt(i + 1);
+
+          // auto-submit when last digit filled
+          await submitIfReady();
+        });
+
+        b.addEventListener("keydown", (e) => {
+          if (e.key === "Backspace" && !b.value && i > 0) {
+            boxes[i - 1].value = "";
+            focusAt(i - 1);
+            syncHidden();
+          }
+          if (e.key === "ArrowLeft" && i > 0) focusAt(i - 1);
+          if (e.key === "ArrowRight" && i < boxes.length - 1) focusAt(i + 1);
+        });
+
+        b.addEventListener("paste", async (e) => {
+          const text = (e.clipboardData || window.clipboardData).getData("text") || "";
+          const digits = text.replace(/\\D/g, "").slice(0, OTP_LEN);
+          if (!digits) return;
+          e.preventDefault();
+          for (let k = 0; k < boxes.length; k++) boxes[k].value = digits[k] || "";
+          syncHidden();
+          focusAt(Math.min(digits.length, boxes.length - 1));
+          await submitIfReady();
+        });
+      });
+
+      if (clearBtn){
+        clearBtn.addEventListener("click", () => {
+          boxes.forEach(b => b.value = "");
+          submitting = false;
+          syncHidden();
+          focusAt(0);
+          setHint("", false);
+        });
+      }
+
+      // before submit: prevent if not ready
+      form.addEventListener("submit", (e) => {
+        const otp = readOtp();
+        if (!active) {
+          e.preventDefault();
+          setHint("Klik Request OTP dulu.", true);
+          toastr.warning("Klik Request OTP dulu");
+          shake(grid);
+          return;
+        }
+        if (!expiresAt || Date.now() > expiresAt) {
+          e.preventDefault();
+          setHint("OTP expired. Request OTP ulang.", true);
+          toastr.error("OTP expired. Request OTP ulang.");
+          shake(grid);
+          return;
+        }
+        if (otp.length !== OTP_LEN) {
+          e.preventDefault();
+          setHint("OTP belum lengkap.", true);
+          toastr.warning("OTP belum lengkap");
+          shake(grid);
+          return;
+        }
+      });
+
+      async function fetchStatus(){
+        try{
+          const r = await fetch("/otp/status", { cache: "no-store" });
+          const j = await r.json();
+
+          active = !!j.active;
+          expiresAt = Number(j.expiresAt || 0) || 0;
+
+          if (!active){
+            if (pill) pill.style.opacity = 0.7;
+            if (countdownEl) countdownEl.textContent = "--:--";
+            setHint("Klik Request OTP dulu.", false);
+            submitting = false;
+            syncHidden();
+            return;
+          }
+          if (pill) pill.style.opacity = 1;
+          setHint("", false);
+          syncHidden();
+        } catch {}
+      }
+
+      function fmt(sec){
+        const s = Math.max(0, sec|0);
+        const m = Math.floor(s/60);
+        const r = s%60;
+        return String(m).padStart(2,"0") + ":" + String(r).padStart(2,"0");
+      }
+
+      function tick(){
+        if (!countdownEl) return;
+        if (!active || !expiresAt){
+          countdownEl.textContent = "--:--";
+          return;
+        }
+        const left = Math.ceil((expiresAt - Date.now()) / 1000);
+        countdownEl.textContent = fmt(left);
+
+        if (left <= 0){
+          active = false;
+          submitting = false;
+          syncHidden();
+          setHint("OTP expired. Request OTP ulang.", true);
+          toastr.error("OTP expired. Request OTP ulang.");
+          shake(grid);
+        }
+      }
+
+      async function initOtpUI(){
+        boxes.forEach(b => b.value = "");
+        submitting = false;
+        syncHidden();
+        focusAt(0);
+        await fetchStatus();
+        tick();
+      }
+
+      // hook tab switch to init
+      const _setTab = window.setTab;
+      window.setTab = function(tabId){
+        _setTab(tabId);
+        if (tabId === "otp") initOtpUI();
+      };
+
+      if (location.hash === "#otp") initOtpUI();
+
+      setInterval(fetchStatus, 5000);
+      setInterval(tick, 1000);
+    })();
+  </script>
+</body>
+</html>

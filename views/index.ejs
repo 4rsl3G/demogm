@@ -1,0 +1,120 @@
+<%-
+  include("layout", {
+    title: "Connect",
+    toast,
+    body: `
+      <div class="grid">
+        <div class="card">
+          <div class="title"><i class="ri-login-circle-line"></i> Connect Account</div>
+          <div class="muted">
+            <b>Note:</b> ${note}
+            <br/>Mutasi tidak diambil otomatis. Semua aksi manual via tombol.
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="tabs">
+            <button type="button" class="tab active" onclick="setTab('email')" data-tabbtn="email">
+              <i class="ri-mail-line"></i> Email Login
+            </button>
+            <button type="button" class="tab" onclick="setTab('otp')" data-tabbtn="otp">
+              <i class="ri-message-2-line"></i> OTP Login
+            </button>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <!-- EMAIL TAB -->
+          <div data-tab="email">
+            <form method="post" action="/connect/email" class="row" data-loading="1">
+              <input class="inp" name="email" placeholder="Email" autocomplete="username" />
+              <input class="inp" type="password" name="password" placeholder="Password" autocomplete="current-password" />
+              <button class="btn" type="submit"><i class="ri-link"></i> Connect</button>
+              <div class="muted">
+                Password hanya dipakai untuk login dan tidak disimpan.
+              </div>
+            </form>
+          </div>
+
+          <!-- OTP TAB -->
+          <div data-tab="otp" style="display:none" id="otp">
+            <form method="post" action="/connect/otp/request" class="row" data-loading="1">
+              <div class="split">
+                <input class="inp" style="max-width:140px" name="countryCode" placeholder="Country" value="62" />
+                <input class="inp" name="phone" placeholder="Phone (tanpa +)" />
+              </div>
+              <button class="btn secondary" type="submit"><i class="ri-send-plane-2-line"></i> Request OTP</button>
+              <div class="muted">
+                Setelah OTP dikirim, token OTP disimpan otomatis di sesi (cookie httpOnly terenkripsi). User tidak melihat otpToken.
+              </div>
+            </form>
+
+            <div style="height:12px"></div>
+
+            <form method="post" action="/connect/otp/verify" class="row" data-loading="1" id="otpVerifyForm">
+              <input type="hidden" name="otp" id="otpHidden" />
+
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+                <div class="muted">
+                  Masukkan OTP (6 digit). Auto-submit saat digit ke-6 masuk.
+                </div>
+                <div class="pill" id="otpPill">
+                  <i class="ri-timer-line"></i>
+                  <span id="otpCountdown">--:--</span>
+                </div>
+              </div>
+
+              <div class="otp-grid" id="otpGrid" aria-label="OTP input">
+                <input class="otp-box" inputmode="numeric" maxlength="1" autocomplete="one-time-code" />
+                <input class="otp-box" inputmode="numeric" maxlength="1" />
+                <input class="otp-box" inputmode="numeric" maxlength="1" />
+                <input class="otp-box" inputmode="numeric" maxlength="1" />
+                <input class="otp-box" inputmode="numeric" maxlength="1" />
+                <input class="otp-box" inputmode="numeric" maxlength="1" />
+              </div>
+
+              <div class="actions">
+                <button class="btn" type="submit" id="otpVerifyBtn">
+                  <i class="ri-check-double-line"></i> Verify OTP
+                </button>
+                <button class="btn secondary" type="button" id="otpClearBtn">
+                  <i class="ri-delete-back-2-line"></i> Clear
+                </button>
+              </div>
+
+              <div class="muted" id="otpHint" style="display:none"></div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="title"><i class="ri-shield-check-line"></i> Privacy & Flow</div>
+          <div class="muted">
+            <ul style="margin:0; padding-left:16px; line-height:1.6">
+              <li><b>Credential tidak disimpan</b> (email/password/OTP).</li>
+              <li>Yang disimpan sementara: <b>token sesi</b> (terenkripsi) di cookie <b>httpOnly</b>.</li>
+              <li>Setelah connect, buka dashboard untuk ambil <b>Merchant ID</b> dan <b>Mutasi</b>.</li>
+            </ul>
+          </div>
+
+          <div style="height:14px"></div>
+
+          <div class="actions">
+            <a class="btn" href="/dashboard"><i class="ri-dashboard-line"></i> Open Dashboard</a>
+            ${
+              loggedIn
+                ? `<span class="pill"><i class="ri-checkbox-circle-line"></i> Logged In</span>`
+                : `<span class="pill"><i class="ri-close-circle-line"></i> Logged Out</span>`
+            }
+          </div>
+
+          <div style="height:14px"></div>
+
+          <div class="muted">
+            Tip: versi ini tanpa DB. Kalau butuh super stabil (tanpa limit cookie), pakai Redis/KV.
+          </div>
+        </div>
+      </div>
+    `
+  })
+%>

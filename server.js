@@ -7,28 +7,34 @@ const path = require("path");
 
 const BASE_URL = "https://api.gobiz.co.id";
 const PORT = process.env.PORT || 3000;
+
 const COOKIE_NAME = process.env.COOKIE_NAME || "gobiz_sess";
 const SECRET = process.env.SESSION_SECRET || "";
 
-if (SECRET.length < 32) {
-  console.warn("SESSION_SECRET harus >= 32 karakter");
+// ====== Safety checks ======
+if (!SECRET || SECRET.length < 32) {
+  console.warn("SESSION_SECRET harus >= 32 karakter (set di ENV Vercel).");
 }
 
 const app = express();
+app.set("trust proxy", 1); // penting buat Vercel/behind proxy (secure cookie & proto)
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-app.use(express.urlencoded({ extended: true }));
+
+app.use(express.urlencoded({ extended: true })); // x-www-form-urlencoded
 app.use(express.json({ limit: "200kb" }));
 app.use(cookieParser());
 
+// ===== HTTP client =====
 const http = axios.create({
   timeout: 30000,
-  validateStatus: () => true
+  validateStatus: () => true,
 });
 
 // ===== Crypto Cookie (AES-256-GCM) =====
 function key32() {
-  return crypto.createHash("sha256").update(SECRET).digest();
+  // tetap produce 32 bytes walau SECRET kosong (tapi warning sudah)
+  return crypto.createHash("sha256").update(String(SECRET)).digest();
 }
 
 function encryptJSON(obj) {
@@ -51,6 +57,36 @@ function decryptJSON(token) {
   return JSON.parse(dec.toString("utf8"));
 }
 
+// ===== Helpers =====
+function wantsJson(req) {
+  const a = String(req.headers.accept || "");
+  return a.includes("application/json");
+}
+
+function safeMsg(err, fallback = "FAILED") {
+  const m = (err && err.message) ? String(err.message) : String(fallback);
+  return m.slice(0, 220);
+}
+
+function isHttps(req) {
+  // Vercel set x-forwarded-proto: https
+  const xf = String(req.headers["x-forwarded-proto"] || "");
+  if (xf) return xf.includes("https");
+  // fallback
+  return req.secure === true;
+}
+
+function normalizePhone(raw) {
+  // allow digits only, remove leading 0 (umum di ID)
+  const d = String(raw || "").replace(/\D/g, "");
+  if (!d) return "";
+  return d.startsWith("0") ? d.slice(1) : d;
+}
+
+function normalizeOtp(raw) {
+  return String(raw || "").replace(/\D/g, "");
+}
+
 // ===== Session =====
 function newSession() {
   return {
@@ -64,7 +100,7 @@ function newSession() {
 
     otpToken: null,
     otpExpiresAt: null,
-    otpLength: 6
+    otpLength: 6,
   };
 }
 
@@ -78,7 +114,7 @@ function getSession(req) {
   }
 }
 
-function setSession(res, session) {
+function setSession(req, res, session) {
   // simpan minimal supaya cookie kecil
   const payload = {
     accessToken: session.accessToken || null,
@@ -87,24 +123,25 @@ function setSession(res, session) {
     uniqueId: session.uniqueId,
     ua: session.ua,
     lastRequest: session.lastRequest || 0,
+
     otpToken: session.otpToken || null,
     otpExpiresAt: session.otpExpiresAt || null,
-    otpLength: Number(session.otpLength || 6) || 6
+    otpLength: Number(session.otpLength || 6) || 6,
   };
 
   const token = encryptJSON(payload);
 
-  // cookie limit ~4KB, jaga aman
+  // cookie limit ~4KB
   if (Buffer.byteLength(token, "utf8") > 3500) {
     throw new Error("COOKIE_TOO_LARGE: gunakan storage server (Redis/KV) jika token membesar.");
   }
 
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // true saat https
+    secure: process.env.NODE_ENV === "production" ? isHttps(req) : false,
     sameSite: "lax",
     path: "/",
-    maxAge: 8 * 60 * 60 * 1000
+    maxAge: 8 * 60 * 60 * 1000, // 8h
   });
 }
 
@@ -116,7 +153,7 @@ function isLoggedIn(sess) {
   return !!sess?.accessToken;
 }
 
-// ===== GoBiz =====
+// ===== GoBiz Headers =====
 function headers(session, auth = false) {
   return {
     "Content-Type": "application/json",
@@ -136,7 +173,7 @@ function headers(session, auth = false) {
     "X-Uniqueid": session.uniqueId,
     "X-User-Type": "merchant",
     "User-Agent": session.ua,
-    ...(auth ? { Authorization: `Bearer ${session.accessToken}` } : {})
+    ...(auth ? { Authorization: `Bearer ${session.accessToken}` } : {}),
   };
 }
 
@@ -146,6 +183,7 @@ async function rateLimit(session) {
   session.lastRequest = Date.now();
 }
 
+// ===== GoBiz Actions =====
 async function loginEmail(session, email, password) {
   await rateLimit(session);
 
@@ -163,7 +201,7 @@ async function loginEmail(session, email, password) {
     {
       client_id: "go-biz-web-new",
       grant_type: "password",
-      data: { email, password, user_type: "merchant" }
+      data: { email, password, user_type: "merchant" },
     },
     { headers: headers(session) }
   );
@@ -215,7 +253,7 @@ async function verifyOTP(session, otp) {
     {
       client_id: "go-biz-web-new",
       grant_type: "otp",
-      data: { otp, otp_token: otpToken }
+      data: { otp, otp_token: otpToken },
     },
     { headers: { ...headers(session), Authorization: "Bearer" } }
   );
@@ -241,7 +279,7 @@ async function refreshToken(session) {
     {
       client_id: "go-biz-web-new",
       grant_type: "refresh_token",
-      data: { refresh_token: session.refreshToken, user_type: "merchant" }
+      data: { refresh_token: session.refreshToken, user_type: "merchant" },
     },
     { headers: headers(session) }
   );
@@ -284,9 +322,9 @@ async function getMerchantId(session) {
   const r = await authRequest(session, "POST", `${BASE_URL}/v1/merchants/search`, {
     from: 0,
     to: 1,
-    _source: ["id"]
+    _source: ["id"],
   });
-  return r?.hits?.[0]?.id;
+  return r?.hits?.[0]?.id || "";
 }
 
 async function searchJournals(session, merchantId, fromISO, toISO) {
@@ -301,10 +339,10 @@ async function searchJournals(session, merchantId, fromISO, toISO) {
         clauses: [
           { field: "metadata.transaction.merchant_id", op: "equal", value: merchantId },
           { field: "metadata.transaction.transaction_time", op: "gte", value: fromISO },
-          { field: "metadata.transaction.transaction_time", op: "lte", value: toISO }
-        ]
-      }
-    ]
+          { field: "metadata.transaction.transaction_time", op: "lte", value: toISO },
+        ],
+      },
+    ],
   });
 }
 
@@ -320,7 +358,7 @@ function toSimple(tx) {
     currency: t?.amount?.currency || "IDR",
     method: t?.payment_method || t?.payment_type || "UNKNOWN",
     status: t?.status || tx?.status || "UNKNOWN",
-    note: t?.remark || t?.description || "Pembayaran masuk"
+    note: t?.remark || t?.description || "Pembayaran masuk",
   };
 }
 
@@ -333,11 +371,11 @@ function todayRangeJakarta() {
   return {
     fromISO: `${day}T00:00:00+07:00`,
     toISO: `${day}T23:59:59+07:00`,
-    date: day
+    date: day,
   };
 }
 
-// ===== UI =====
+// ===== UI helpers =====
 function renderNote() {
   return "Credential (email/password/OTP) tidak disimpan. Sistem hanya menyimpan token sesi terenkripsi sementara di cookie httpOnly untuk mengambil data merchant/mutasi.";
 }
@@ -350,13 +388,16 @@ function toastPayload(req) {
   return { type, message: m.slice(0, 220) };
 }
 
+// ===== Health =====
+app.get("/health", (req, res) => res.json({ ok: true, ts: Date.now() }));
+
 // ===== Pages =====
 app.get("/", (req, res) => {
   const sess = getSession(req);
   res.render("index", {
     loggedIn: isLoggedIn(sess),
     note: renderNote(),
-    toast: toastPayload(req)
+    toast: toastPayload(req),
   });
 });
 
@@ -369,7 +410,7 @@ app.get("/dashboard", (req, res) => {
     note: renderNote(),
     toast: toastPayload(req),
     merchantId: String(req.query.merchantId || ""),
-    json: null
+    json: null,
   });
 });
 
@@ -379,26 +420,47 @@ app.post("/connect/email", async (req, res) => {
   let sess = getSession(req) || newSession();
 
   try {
-    await loginEmail(sess, String(email || ""), String(password || ""));
-    setSession(res, sess);
+    const e = String(email || "").trim();
+    const p = String(password || "");
+    if (!e || !p) throw new Error("EMAIL_PASSWORD_REQUIRED");
+
+    await loginEmail(sess, e, p);
+    setSession(req, res, sess);
+
     return res.redirect("/dashboard?t=success&m=" + encodeURIComponent("Connect sukses. Credential tidak disimpan."));
-  } catch (e) {
-    return res.redirect("/?t=error&m=" + encodeURIComponent(e.message || "LOGIN_FAILED"));
+  } catch (err) {
+    return res.redirect("/?t=error&m=" + encodeURIComponent(safeMsg(err, "LOGIN_FAILED")));
   }
 });
 
+// OTP request: supports JSON (AJAX) + redirect fallback
 app.post("/connect/otp/request", async (req, res) => {
   const { phone, countryCode } = req.body || {};
   let sess = getSession(req) || newSession();
 
   try {
-    const r = await requestOTP(sess, String(phone || ""), String(countryCode || "62"));
-    setSession(res, sess);
+    const cc = String(countryCode || "62").replace(/\D/g, "") || "62";
+    const ph = normalizePhone(phone);
+
+    if (!ph) throw new Error("PHONE_REQUIRED");
+
+    const r = await requestOTP(sess, ph, cc);
+    setSession(req, res, sess);
+
+    if (wantsJson(req)) {
+      return res.json({ ok: true, expiresIn: r.expiresIn, otpLength: r.otpLength });
+    }
+
     return res.redirect(
-  "/?otp=1&t=success&m=" + encodeURIComponent(`OTP terkirim. Exp ${r.expiresIn}s.`) + "#otp"
-);
-  } catch (e) {
-    return res.redirect("/?t=error&m=" + encodeURIComponent(e.message || "OTP_REQUEST_FAILED") + "#otp");
+      "/?otp=1&t=success&m=" + encodeURIComponent(`OTP terkirim. Exp ${r.expiresIn}s.`) + "#otp"
+    );
+  } catch (err) {
+    if (wantsJson(req)) {
+      return res.status(400).json({ ok: false, message: safeMsg(err, "OTP_REQUEST_FAILED") });
+    }
+    return res.redirect(
+      "/?t=error&m=" + encodeURIComponent(safeMsg(err, "OTP_REQUEST_FAILED")) + "#otp"
+    );
   }
 });
 
@@ -408,25 +470,27 @@ app.post("/connect/otp/verify", async (req, res) => {
 
   try {
     if (!sess.otpToken) throw new Error("OTP_TOKEN_NOT_FOUND: request OTP dulu.");
+
     if (sess.otpExpiresAt && Date.now() > sess.otpExpiresAt) {
       sess.otpToken = null;
       sess.otpExpiresAt = null;
       sess.otpLength = 6;
-      setSession(res, sess);
+      setSession(req, res, sess);
       throw new Error("OTP_EXPIRED: request OTP ulang.");
     }
 
-    const code = String(otp || "").replace(/\D/g, "");
-    if (code.length !== Number(sess.otpLength || 6)) throw new Error("OTP_INVALID_LENGTH");
+    const code = normalizeOtp(otp);
+    const needLen = Number(sess.otpLength || 6) || 6;
+    if (code.length !== needLen) throw new Error("OTP_INVALID_LENGTH");
 
     await verifyOTP(sess, code);
-    setSession(res, sess);
+    setSession(req, res, sess);
 
     return res.redirect(
       "/dashboard?t=success&m=" + encodeURIComponent("OTP verify sukses. Credential tidak disimpan.")
     );
-  } catch (e) {
-    return res.redirect("/?t=error&m=" + encodeURIComponent(e.message || "OTP_VERIFY_FAILED") + "#otp");
+  } catch (err) {
+    return res.redirect("/?t=error&m=" + encodeURIComponent(safeMsg(err, "OTP_VERIFY_FAILED")) + "#otp");
   }
 });
 
@@ -439,14 +503,15 @@ app.post("/merchant", async (req, res) => {
 
   try {
     const merchantId = await getMerchantId(sess);
-    setSession(res, sess);
+    setSession(req, res, sess);
+
     return res.redirect(
       "/dashboard?t=success&m=" +
         encodeURIComponent("Merchant ID berhasil diambil.") +
         "&merchantId=" + encodeURIComponent(merchantId || "")
     );
-  } catch (e) {
-    return res.redirect("/dashboard?t=error&m=" + encodeURIComponent(e.message || "FAILED"));
+  } catch (err) {
+    return res.redirect("/dashboard?t=error&m=" + encodeURIComponent(safeMsg(err, "FAILED")));
   }
 });
 
@@ -456,7 +521,7 @@ app.post("/mutasi", async (req, res) => {
     return res.redirect("/?t=warning&m=" + encodeURIComponent("Silakan connect terlebih dahulu."));
   }
 
-  const merchantId = String(req.body.merchantId || "");
+  const merchantId = String(req.body.merchantId || "").trim();
   if (!merchantId) {
     return res.redirect("/dashboard?t=warning&m=" + encodeURIComponent("Merchant ID kosong."));
   }
@@ -464,7 +529,7 @@ app.post("/mutasi", async (req, res) => {
   try {
     const { fromISO, toISO, date } = todayRangeJakarta();
     const raw = await searchJournals(sess, merchantId, fromISO, toISO);
-    setSession(res, sess);
+    setSession(req, res, sess);
 
     const hits = Array.isArray(raw?.hits) ? raw.hits : [];
     const simple = hits.map(toSimple);
@@ -476,17 +541,17 @@ app.post("/mutasi", async (req, res) => {
       range: { fromISO, toISO },
       count: simple.length,
       transactions: simple,
-      note: renderNote()
+      note: renderNote(),
     };
 
     return res.render("dashboard", {
       note: renderNote(),
       toast: { type: "success", message: "Mutasi berhasil diambil (manual, simple)." },
       merchantId,
-      json: result
+      json: result,
     });
-  } catch (e) {
-    return res.redirect("/dashboard?t=error&m=" + encodeURIComponent(e.message || "FAILED"));
+  } catch (err) {
+    return res.redirect("/dashboard?t=error&m=" + encodeURIComponent(safeMsg(err, "FAILED")));
   }
 });
 
@@ -508,13 +573,14 @@ app.get("/otp/status", (req, res) => {
     sess.otpToken = null;
     sess.otpExpiresAt = null;
     sess.otpLength = 6;
-    try { setSession(res, sess); } catch {}
+    try { setSession(req, res, sess); } catch {}
     return res.json({ active: false, otpLength: 6, expiresAt: 0 });
   }
 
   return res.json({ active, otpLength, expiresAt });
 });
 
+// ===== Start =====
 app.listen(PORT, () => {
   console.log(`Server running http://localhost:${PORT}`);
 });

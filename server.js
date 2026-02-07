@@ -395,8 +395,8 @@ app.post("/connect/otp/request", async (req, res) => {
     const r = await requestOTP(sess, String(phone || ""), String(countryCode || "62"));
     setSession(res, sess);
     return res.redirect(
-      "/?t=success&m=" + encodeURIComponent(`OTP terkirim. Exp ${r.expiresIn}s.`) + "#otp"
-    );
+  "/?otp=1&t=success&m=" + encodeURIComponent(`OTP terkirim. Exp ${r.expiresIn}s.`) + "#otp"
+);
   } catch (e) {
     return res.redirect("/?t=error&m=" + encodeURIComponent(e.message || "OTP_REQUEST_FAILED") + "#otp");
   }

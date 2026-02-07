@@ -17,70 +17,42 @@ const mid = merchantId || "";
     otp_modal_body: "",
     body: `
       <div class="grid">
-        <!-- LEFT: Tools -->
+
         <div class="card">
-          <div class="title"><i class="ri-dashboard-2-line"></i> Dashboard Tools</div>
+          <div class="title"><i class="ri-tools-line"></i> Actions</div>
           <div class="muted">
             <b>Note:</b> ${note}<br/>
-            Alur: <b>Get Merchant</b> → <b>Get Mutasi</b>. Mutasi hanya diambil saat tombol ditekan.
+            Klik tombol untuk ambil data secara manual.
           </div>
 
           <div style="height:12px"></div>
 
-          <!-- Quick status -->
-          <div class="card soft" style="padding:12px">
-            <div class="split" style="justify-content:space-between; gap:10px">
-              <div style="min-width:180px">
-                <div style="font-weight:950; font-size:13.5px; display:flex; align-items:center; gap:8px">
-                  <i class="ri-store-2-line"></i> Merchant ID
-                </div>
-                <div class="muted" style="margin-top:3px">
-                  <b><%= mid ? mid : "-" %></b>
-                </div>
-              </div>
-
-              <div style="min-width:180px">
-                <div style="font-weight:950; font-size:13.5px; display:flex; align-items:center; gap:8px">
-                  <i class="ri-shield-check-line"></i> Session
-                </div>
-                <div class="muted" style="margin-top:3px">
-                  Cookie httpOnly terenkripsi (tanpa DB).
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div style="height:12px"></div>
-
-          <!-- Merchant -->
-          <div class="card soft" style="padding:12px">
-            <div class="split" style="justify-content:space-between">
-              <div>
-                <div style="font-weight:950;font-size:13.5px; display:flex; align-items:center; gap:8px">
-                  <i class="ri-search-line"></i> Get Merchant ID
-                </div>
-                <div class="muted" style="margin-top:3px">
-                  Ambil merchant id otomatis dari akun yang sudah connect.
-                </div>
-              </div>
-
-              <form method="post" action="/merchant" data-loading="1">
-                <button class="btn primary" type="submit">
-                  <i class="ri-download-cloud-line"></i> Get Merchant
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <div style="height:12px"></div>
-
-          <!-- Mutasi -->
           <div class="card soft" style="padding:12px">
             <div style="font-weight:950;font-size:13.5px; display:flex; align-items:center; gap:8px">
-              <i class="ri-receipt-line"></i> Get Mutasi (Manual)
+              <i class="ri-store-2-line"></i> Merchant ID
             </div>
             <div class="muted" style="margin-top:4px">
-              Ambil mutasi “simple JSON” untuk hari ini (range sesuai backend).
+              <b><%= mid ? mid : "-" %></b>
+            </div>
+            <div style="height:10px"></div>
+
+            <form method="post" action="/merchant" data-loading="1">
+              <button class="btn primary" type="submit"><i class="ri-download-cloud-line"></i> Get Merchant</button>
+            </form>
+
+            <div class="muted" style="margin-top:10px">
+              Ambil Merchant ID otomatis dari akun yang sudah connect.
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="card soft" style="padding:12px">
+            <div style="font-weight:950;font-size:13.5px; display:flex; align-items:center; gap:8px">
+              <i class="ri-receipt-line"></i> Mutasi (Manual)
+            </div>
+            <div class="muted" style="margin-top:4px">
+              Ambil mutasi “simple JSON” untuk hari ini.
             </div>
 
             <div style="height:10px"></div>
@@ -92,51 +64,40 @@ const mid = merchantId || "";
               </div>
 
               <div class="actions">
-                <button class="btn primary" type="submit">
-                  <i class="ri-file-list-3-line"></i> Get Mutasi Simple
-                </button>
-
-                <button class="btn secondary" type="button"
-                  onclick="toastr.info('Mutasi tidak dipolling otomatis. Klik tombol untuk fetch manual.')">
+                <button class="btn primary" type="submit"><i class="ri-file-list-3-line"></i> Get Mutasi</button>
+                <button class="btn secondary" type="button" onclick="toastr.info('Mutasi tidak dipolling otomatis. Klik tombol untuk fetch manual.')">
                   <i class="ri-information-line"></i> Info
                 </button>
               </div>
 
               <div class="muted">
-                <i class="ri-timer-line"></i>
-                Tanpa auto polling untuk menghindari limit dan menjaga performa Vercel.
+                <i class="ri-timer-line"></i> Tidak ada auto polling untuk menghindari limit & beban.
               </div>
             </form>
           </div>
 
           <div style="height:12px"></div>
 
-          <!-- Danger zone -->
           <div class="card soft" style="padding:12px; border:1px solid rgba(220,38,38,.18); background: rgba(220,38,38,.04)">
             <div style="font-weight:950;font-size:13.5px; display:flex; align-items:center; gap:8px; color:#b91c1c">
-              <i class="ri-alert-line"></i> Session Control
+              <i class="ri-alert-line"></i> Logout
             </div>
             <div class="muted" style="margin-top:4px">
-              Logout akan menghapus session cookie (token sesi).
+              Menghapus session cookie (token sesi).
             </div>
             <div style="height:10px"></div>
             <form method="post" action="/logout" data-loading="1">
-              <button class="btn danger" type="submit">
-                <i class="ri-logout-circle-r-line"></i> Logout
-              </button>
+              <button class="btn danger" type="submit"><i class="ri-logout-circle-r-line"></i> Logout</button>
             </form>
           </div>
         </div>
 
-        <!-- RIGHT: Result -->
         <div class="card">
           <div class="split" style="justify-content:space-between; align-items:flex-start">
             <div>
-              <div class="title" style="margin:0">
-                <i class="ri-braces-line"></i> Result JSON
-              </div>
+              <div class="title" style="margin:0"><i class="ri-braces-line"></i> Result</div>
               <div class="muted" style="margin-top:6px">
-                Output “simple JSON” supaya mudah dicopy dan dipakai di integration kamu.
+                Output simple JSON biar gampang dicopy untuk integrasi.
               </div>
             </div>
 
@@ -144,17 +105,17 @@ const mid = merchantId || "";
               json
                 ? `
                   <div class="actions" style="justify-content:flex-end">
-                    <button class="btn secondary" type="button" onclick="copyText('jsonOut')">
+                    <button class="btn secondary" type="button" onclick="copyText('jsonOut')" style="width:auto">
                       <i class="ri-file-copy-line"></i> Copy
                     </button>
-                    <span class="pill" title="Jumlah transaksi">
+                    <span class="pill" style="display:inline-flex" title="Jumlah transaksi">
                       <i class="ri-hashtag"></i> Count: ${(json.count ?? "-")}
                     </span>
                   </div>
                 `
                 : `
                   <div class="actions" style="justify-content:flex-end">
-                    <button class="btn secondary" type="button" onclick="toastr.info('Belum ada data. Klik Get Merchant lalu Get Mutasi.')">
+                    <button class="btn secondary" type="button" onclick="toastr.info('Belum ada output. Klik Get Merchant lalu Get Mutasi.')" style="width:auto">
                       <i class="ri-sparkling-line"></i> Guide
                     </button>
                   </div>
@@ -169,17 +130,16 @@ const mid = merchantId || "";
               ? `
                 <pre id="jsonOut">${escapeHtml(JSON.stringify(json, null, 2))}</pre>
                 <div class="muted" style="margin-top:10px">
-                  <i class="ri-lock-line"></i>
-                  Reminder: credential tidak disimpan. Yang disimpan sementara hanya token sesi terenkripsi (cookie httpOnly).
+                  <i class="ri-lock-line"></i> Credential tidak disimpan. Session hanya sementara (cookie httpOnly terenkripsi).
                 </div>
               `
               : `
                 <div class="card soft" style="padding:12px">
                   <div style="font-weight:950;font-size:13.5px; display:flex; align-items:center; gap:8px">
-                    <i class="ri-flag-line"></i> Belum ada output
+                    <i class="ri-flag-line"></i> Belum ada data
                   </div>
                   <div class="muted" style="margin-top:4px">
-                    Mulai dari <b>Get Merchant</b> untuk mengisi Merchant ID, lalu klik <b>Get Mutasi</b>.
+                    Mulai dari <b>Get Merchant</b> agar Merchant ID terisi otomatis.
                   </div>
                 </div>
 
@@ -200,14 +160,10 @@ const mid = merchantId || "";
       </div>
 
       <script>
-        // Auto toast hint when merchantId empty
         (function(){
           const mid = ${JSON.stringify(mid)};
-          if (!mid) {
-            // don't spam: only show if no toast already
-            const t = window.__TOAST__;
-            if (!t) setTimeout(()=>toastr.info("Klik Get Merchant dulu agar Merchant ID terisi."), 450);
-          }
+          const t = window.__TOAST__;
+          if (!mid && !t) setTimeout(()=>toastr.info("Klik Get Merchant dulu agar Merchant ID terisi."), 500);
         })();
       </script>
     `

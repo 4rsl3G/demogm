@@ -13,6 +13,7 @@ function escapeHtml(str){
   include("layout", {
     title: "Dashboard",
     toast,
+    otp_modal_body: "", // dashboard ga butuh modal
     body: `
       <div class="grid">
         <div class="card">
@@ -21,23 +22,23 @@ function escapeHtml(str){
 
           <div style="height:12px"></div>
 
-          <div class="card" style="padding:12px; border-radius:14px; background:rgba(255,255,255,.03)">
+          <div class="card soft">
             <div class="title" style="margin:0 0 10px 0"><i class="ri-search-line"></i> Get Merchant ID</div>
             <form method="post" action="/merchant" data-loading="1">
-              <button class="btn" type="submit"><i class="ri-download-cloud-line"></i> Get Merchant</button>
+              <button class="btn primary" type="submit"><i class="ri-download-cloud-line"></i> Get Merchant</button>
             </form>
             <div class="muted" style="margin-top:10px">
-              Merchant ID: <b>${merchantId || "-"}</b>
+              Merchant ID: <b><%= merchantId || "-" %></b>
             </div>
           </div>
 
           <div style="height:12px"></div>
 
-          <div class="card" style="padding:12px; border-radius:14px; background:rgba(255,255,255,.03)">
+          <div class="card soft">
             <div class="title" style="margin:0 0 10px 0"><i class="ri-receipt-line"></i> Get Mutasi (Manual)</div>
             <form method="post" action="/mutasi" class="row" data-loading="1">
-              <input class="inp" name="merchantId" value="${merchantId || ""}" placeholder="Merchant ID (klik Get Merchant dulu)" />
-              <button class="btn" type="submit"><i class="ri-file-list-3-line"></i> Get Mutasi Simple</button>
+              <input class="inp" name="merchantId" value="<%= merchantId || '' %>" placeholder="Merchant ID (klik Get Merchant dulu)" />
+              <button class="btn primary" type="submit"><i class="ri-file-list-3-line"></i> Get Mutasi Simple</button>
               <div class="muted">
                 Mutasi hanya diambil saat tombol ditekan (tanpa auto polling).
               </div>
@@ -58,7 +59,9 @@ function escapeHtml(str){
             json
               ? `
                 <div class="actions" style="margin-bottom:10px">
-                  <button class="btn secondary" type="button" onclick="copyText('jsonOut')"><i class="ri-file-copy-line"></i> Copy JSON</button>
+                  <button class="btn secondary" type="button" onclick="copyText('jsonOut')">
+                    <i class="ri-file-copy-line"></i> Copy JSON
+                  </button>
                   <span class="pill"><i class="ri-check-line"></i> Count: ${(json.count ?? "-")}</span>
                 </div>
                 <pre id="jsonOut">${escapeHtml(JSON.stringify(json, null, 2))}</pre>

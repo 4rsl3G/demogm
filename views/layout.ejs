@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover" />
   <title><%= title %></title>
 
   <!-- RemixIcon -->
@@ -13,29 +13,30 @@
 
   <style>
     :root{
-      /* Light base */
       --bg: #f5f7fb;
       --card: #ffffff;
+      --text: #0b1220;
       --muted: #5b6676;
-      --text: #0c1420;
       --line: rgba(12,20,32,.10);
 
-      /* Brand hijau tua */
       --brand: #0f3d2e;
       --brand2: #145a42;
       --brandSoft: rgba(15,61,46,.10);
       --brandRing: rgba(15,61,46,.16);
 
-      /* Neutral */
       --shadow: 0 10px 26px rgba(16,24,40,.10);
       --shadow2: 0 20px 60px rgba(16,24,40,.14);
-      --r: 18px;
 
-      /* Typography scale */
-      --fs-12: 12.5px;
-      --fs-13: 13.3px;
-      --fs-14: 14px;
-      --fs-15: 15px;
+      --r: 18px;
+      --r2: 22px;
+
+      --fs12: 12.5px;
+      --fs13: 13.3px;
+      --fs14: 14px;
+      --fs15: 15px;
+      --fs16: 16px;
+
+      --tap: 46px;
     }
 
     *{box-sizing:border-box}
@@ -45,45 +46,50 @@
       background: var(--bg);
       color: var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      -webkit-font-smoothing: antialiased;
       overflow-x:hidden;
     }
 
-    /* Background: subtle + branded */
+    /* subtle background */
     .bg{
       position:fixed; inset:0; z-index:-1;
       background:
-        radial-gradient(900px 520px at 12% 10%, rgba(15,61,46,.10), transparent 55%),
-        radial-gradient(760px 520px at 90% 20%, rgba(15,61,46,.07), transparent 55%),
+        radial-gradient(900px 520px at 10% 8%, rgba(15,61,46,.10), transparent 55%),
+        radial-gradient(760px 520px at 92% 18%, rgba(15,61,46,.07), transparent 55%),
         radial-gradient(900px 560px at 55% 95%, rgba(20,90,66,.06), transparent 55%),
         linear-gradient(#f5f7fb, #f5f7fb);
     }
 
-    /* Container */
+    /* container - mobile first */
     .wrap{
       max-width: 1120px;
       margin: 0 auto;
-      padding: 18px;
-      display: grid;
-      gap: 14px;
+      padding: 14px;
+      display:grid;
+      gap: 12px;
+      padding-bottom: 20px;
     }
 
-    /* Topbar */
+    /* topbar - mobile first */
     .topbar{
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      gap:12px;
-      padding: 14px 14px;
-      border-radius: 18px;
+      justify-content:space-between;
+      gap:10px;
+      padding: 12px;
+      border-radius: var(--r2);
       border:1px solid var(--line);
       background: var(--card);
       box-shadow: var(--shadow);
+      position: sticky;
+      top: 10px;
+      z-index: 10;
     }
 
     .brand{
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:10px;
       min-width:0;
     }
 
@@ -96,7 +102,7 @@
         radial-gradient(18px 18px at 30% 25%, rgba(15,61,46,.18), transparent 60%),
         linear-gradient(180deg, rgba(15,61,46,.10), rgba(15,61,46,.05));
       border:1px solid rgba(15,61,46,.16);
-      flex: 0 0 auto;
+      flex:0 0 auto;
     }
 
     .brand h1{
@@ -108,11 +114,10 @@
       overflow:hidden;
       text-overflow: ellipsis;
     }
-
     .brand .sub{
-      margin-top: 2px;
+      margin-top:2px;
       color: var(--muted);
-      font-size: var(--fs-12);
+      font-size: var(--fs12);
       white-space: nowrap;
       overflow:hidden;
       text-overflow: ellipsis;
@@ -127,7 +132,7 @@
     }
 
     .pill{
-      display:inline-flex;
+      display:none; /* mobile hide */
       align-items:center;
       gap:8px;
       padding: 9px 12px;
@@ -136,32 +141,42 @@
       border: 1px solid rgba(15,61,46,.14);
       color: var(--brand);
       font-weight: 900;
-      font-size: var(--fs-12);
-      flex: 0 0 auto;
+      font-size: var(--fs12);
+      white-space: nowrap;
     }
 
     .chip{
       display:inline-flex;
       align-items:center;
       gap:8px;
-      padding: 9px 12px;
-      border-radius:999px;
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 999px;
       background: #fff;
       border: 1px solid var(--line);
-      color: rgba(12,20,32,.82);
+      color: rgba(11,18,32,.86);
       font-weight: 900;
-      font-size: var(--fs-12);
+      font-size: var(--fs12);
       cursor: pointer;
       user-select:none;
       transition: transform .12s ease, box-shadow .12s ease;
+      text-decoration:none;
     }
-    .chip:hover{ transform: translateY(-1px); box-shadow: 0 10px 20px rgba(16,24,40,.10); }
+    .chip:active{ transform: scale(.99); }
+    .chip:hover{ box-shadow: 0 10px 20px rgba(16,24,40,.10); }
 
-    /* Cards */
+    /* layout */
+    .grid{
+      display:grid;
+      gap: 12px;
+      grid-template-columns: 1fr; /* mobile first */
+    }
+
+    /* cards */
     .card{
       background: var(--card);
       border: 1px solid var(--line);
-      border-radius: var(--r);
+      border-radius: var(--r2);
       padding: 14px;
       box-shadow: var(--shadow);
     }
@@ -170,28 +185,26 @@
       box-shadow: none;
     }
 
-    /* Titles & text */
     .title{
-      margin: 0 0 10px 0;
+      margin:0 0 10px 0;
       display:flex;
       align-items:center;
       gap:10px;
       font-weight: 950;
-      font-size: var(--fs-15);
+      font-size: var(--fs15);
       letter-spacing:.1px;
     }
     .muted{
       color: var(--muted);
-      font-size: var(--fs-13);
+      font-size: var(--fs13);
       line-height: 1.65;
     }
 
-    /* Layout helpers */
     .row{ display:grid; gap:10px; }
-    .split{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .split{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .actions{ display:flex; gap:10px; flex-wrap:wrap; }
 
-    /* Inputs */
+    /* inputs */
     .inp{
       height: 48px;
       width: 100%;
@@ -210,9 +223,9 @@
     }
     .inp::placeholder{ color: rgba(91,102,118,.70); }
 
-    /* Buttons */
+    /* buttons */
     .btn{
-      height: 46px;
+      height: var(--tap);
       padding: 0 14px;
       border-radius: 14px;
       border: 1px solid rgba(15,61,46,.18);
@@ -226,41 +239,33 @@
       gap:10px;
       transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
       user-select:none;
+      text-decoration:none;
+      width: 100%; /* mobile first full */
     }
-    .btn:hover{
-      transform: translateY(-1px);
-      background: rgba(15,61,46,.14);
-      box-shadow: 0 10px 20px rgba(16,24,40,.10);
-    }
-    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn:active{ transform: scale(.99); }
+    .btn:hover{ box-shadow: 0 10px 20px rgba(16,24,40,.10); }
 
     .btn.primary{
       border-color: rgba(15,61,46,.22);
       background: linear-gradient(180deg, var(--brand2), var(--brand));
       color:#fff;
-      box-shadow: 0 14px 30px rgba(15,61,46,.22);
+      box-shadow: 0 14px 30px rgba(15,61,46,.18);
     }
-    .btn.primary:hover{
-      background: linear-gradient(180deg, #17664a, var(--brand2));
-    }
-
+    .btn.primary:hover{ background: linear-gradient(180deg, #17664a, var(--brand2)); }
     .btn.secondary{
       background: #fff;
       border-color: var(--line);
-      color: rgba(12,20,32,.92);
+      color: rgba(11,18,32,.92);
       box-shadow: none;
     }
-    .btn.secondary:hover{ box-shadow: 0 10px 20px rgba(16,24,40,.10); }
-
     .btn.danger{
       background: rgba(220,38,38,.10);
       border-color: rgba(220,38,38,.18);
       color: #b91c1c;
     }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
 
-    .btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; box-shadow:none; }
-
-    /* Segmented tabs */
+    /* tabs */
     .tabs{
       display:flex;
       padding: 6px;
@@ -275,7 +280,7 @@
       border-radius: 999px;
       padding: 11px 12px;
       background: transparent;
-      color: rgba(12,20,32,.72);
+      color: rgba(11,18,32,.70);
       font-weight: 950;
       display:flex;
       justify-content:center;
@@ -284,14 +289,14 @@
       cursor:pointer;
       transition: background .12s ease, transform .12s ease, box-shadow .12s ease;
     }
-    .tab:hover{ transform: translateY(-1px); }
+    .tab:active{ transform: scale(.99); }
     .tab.active{
       background: #fff;
       box-shadow: 0 8px 20px rgba(16,24,40,.10);
       color: var(--brand);
     }
 
-    /* Code/JSON */
+    /* JSON */
     pre{
       margin:0;
       padding:14px;
@@ -303,9 +308,10 @@
       line-height: 1.55;
       overflow:auto;
       box-shadow: var(--shadow2);
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* ===== Modal OTP ===== */
+    /* OTP Modal */
     .modal{
       position:fixed; inset:0;
       display:none;
@@ -329,9 +335,7 @@
       opacity: 0;
       animation: modalIn .18s ease forwards;
     }
-    @keyframes modalIn{
-      to{ transform: translateY(0) scale(1); opacity:1; }
-    }
+    @keyframes modalIn{ to{ transform: translateY(0) scale(1); opacity:1; } }
 
     .modal-head{
       padding: 14px 14px;
@@ -349,7 +353,6 @@
       font-weight: 950;
       color: var(--brand);
     }
-
     .xbtn{
       width: 42px;height: 42px;
       border-radius: 14px;
@@ -359,7 +362,8 @@
       display:grid;place-items:center;
       transition: transform .12s ease, box-shadow .12s ease;
     }
-    .xbtn:hover{ transform: translateY(-1px); box-shadow: 0 10px 20px rgba(16,24,40,.10); }
+    .xbtn:active{ transform: scale(.99); }
+    .xbtn:hover{ box-shadow: 0 10px 20px rgba(16,24,40,.10); }
     .modal-body{ padding: 14px; }
 
     .otp-timer{
@@ -370,7 +374,8 @@
       border: 1px solid rgba(15,61,46,.14);
       color: var(--brand);
       font-weight: 950;
-      font-size: var(--fs-12);
+      font-size: var(--fs12);
+      white-space: nowrap;
     }
 
     .otp-grid{
@@ -402,7 +407,7 @@
 
     .otp-hint{
       margin-top: 10px;
-      font-size: var(--fs-13);
+      font-size: var(--fs13);
       color: var(--muted);
       line-height:1.45;
     }
@@ -416,7 +421,7 @@
     }
     .shakeSoft { animation: shakeSoft .28s ease; }
 
-    /* Loading overlay */
+    /* overlay */
     .overlay{
       position:fixed; inset:0;
       background: rgba(2,6,23,.28);
@@ -433,21 +438,20 @@
     }
     @keyframes spin{ to{ transform: rotate(360deg) } }
 
-    /* Responsive tweaks */
-    @media (max-width: 920px){
-      .wrap{ padding: 14px; }
-      .pill{ display:none; }
-      .topbar{ position: sticky; top: 10px; z-index: 5; }
-    }
-    @media (max-width: 420px){
-      .btn{ width:100%; }
-      .actions{ gap:8px; }
-      .otp-grid{ gap:8px; }
-      .otp-box{ height: 48px; font-size: 17px; }
-      .logo{ width: 42px; height: 42px; }
+    /* desktop enhancements */
+    @media (min-width: 920px){
+      .wrap{ padding: 18px; gap: 14px; }
+      .grid{ grid-template-columns: 1.2fr .8fr; gap: 14px; }
+      .pill{ display:inline-flex; }
+      .btn{ width: auto; }
     }
 
-    /* Respect reduced motion */
+    /* small phones */
+    @media (max-width: 380px){
+      .otp-grid{ gap:8px; }
+      .otp-box{ height: 48px; font-size: 17px; }
+    }
+
     @media (prefers-reduced-motion: reduce){
       *{ transition: none !important; animation: none !important; }
     }
@@ -485,18 +489,14 @@
         <div class="logo"><i class="ri-leaf-line"></i></div>
         <div style="min-width:0">
           <h1>GoBiz Connect Toolkit</h1>
-          <div class="sub">Manual: Connect → Merchant → Mutasi (Simple JSON)</div>
+          <div class="sub">Connect → Merchant → Mutasi (Simple JSON)</div>
         </div>
       </div>
 
       <div class="nav">
         <span class="pill"><i class="ri-lock-line"></i> Credential tidak disimpan</span>
-        <button type="button" class="chip" onclick="location.href='/'">
-          <i class="ri-home-4-line"></i> Home
-        </button>
-        <button type="button" class="chip" onclick="location.href='/dashboard'">
-          <i class="ri-dashboard-line"></i> Dashboard
-        </button>
+        <a class="chip" href="/"><i class="ri-home-4-line"></i> Home</a>
+        <a class="chip" href="/dashboard"><i class="ri-dashboard-line"></i> Dashboard</a>
       </div>
     </div>
 
@@ -588,12 +588,8 @@
     }
 
     if (closeBtn) closeBtn.addEventListener("click", hideModal);
-    if (modal) {
-      modal.addEventListener("click", (e) => { if (e.target === modal) hideModal(); });
-    }
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && modal?.classList.contains("show")) hideModal();
-    });
+    if (modal) modal.addEventListener("click", (e) => { if (e.target === modal) hideModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modal?.classList.contains("show")) hideModal(); });
 
     window.__showOtpModal = showModal;
     window.__hideOtpModal = hideModal;
@@ -657,8 +653,7 @@
 
       submitting = true;
       syncUI();
-
-      if (overlay) overlay.classList.add("show");
+      overlay?.classList.add("show");
       try{
         form.requestSubmit ? form.requestSubmit() : form.submit();
       } catch {
@@ -736,7 +731,6 @@
         const j = await r.json();
         active = !!j.active;
         expiresAt = Number(j.expiresAt || 0) || 0;
-
         if (active && modal && !modal.classList.contains("show")) showModal();
         syncUI();
       } catch {}
@@ -754,7 +748,6 @@
       if (!active || !expiresAt){ countdownEl.textContent = "--:--"; return; }
       const left = Math.ceil((expiresAt - Date.now()) / 1000);
       countdownEl.textContent = fmt(left);
-
       if (left <= 0){
         active = false;
         submitting = false;
@@ -768,6 +761,50 @@
     tick();
     setInterval(fetchStatus, 5000);
     setInterval(tick, 1000);
+  })();
+  </script>
+
+  <!-- OPTIONAL: Ajax Request OTP (recommended) -->
+  <script>
+  (function(){
+    const form = document.getElementById("otpRequestForm");
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
+      // jika kamu mau tetap redirect 302, hapus seluruh block ini.
+      e.preventDefault();
+
+      const overlay = document.getElementById("overlay");
+      overlay?.classList.add("show");
+
+      const params = new URLSearchParams();
+      new FormData(form).forEach((v, k) => params.append(k, String(v)));
+
+      try{
+        const res = await fetch(form.action, {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+          },
+          body: params.toString()
+        });
+
+        const data = await res.json().catch(()=> ({}));
+        overlay?.classList.remove("show");
+
+        if (!res.ok || !data.ok) {
+          toastr.error(data.message || "OTP request gagal");
+          return;
+        }
+
+        toastr.success(`OTP terkirim. Exp ${data.expiresIn}s`);
+        window.__showOtpModal?.();
+      } catch {
+        overlay?.classList.remove("show");
+        toastr.error("OTP request gagal (network)");
+      }
+    });
   })();
   </script>
 </body>
